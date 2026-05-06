@@ -1,0 +1,39 @@
+package com.smartemailanalyzer.config;
+
+import jakarta.servlet.Filter;
+import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+/**
+ * Registers the Spring DispatcherServlet without using web.xml.
+ */
+
+//db.url=jdbc:mysql://localhost:3306/smart_email_analyzer?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+//db.username=root
+//db.password=root@123
+
+public class AppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+
+    @Override
+    protected Class<?>[] getRootConfigClasses() {
+        return new Class[]{RootConfig.class};
+    }
+
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[]{WebConfig.class};
+    }
+
+    @Override
+    protected String[] getServletMappings() {
+        return new String[]{"/"};
+    }
+
+    @Override
+    protected Filter[] getServletFilters() {
+        CharacterEncodingFilter encodingFilter = new CharacterEncodingFilter();
+        encodingFilter.setEncoding("UTF-8");
+        encodingFilter.setForceEncoding(true);
+        return new Filter[]{encodingFilter};
+    }
+}

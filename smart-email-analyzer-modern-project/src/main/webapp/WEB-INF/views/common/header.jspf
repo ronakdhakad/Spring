@@ -1,0 +1,40 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<div class="topbar">
+    <div class="brand-wrap">
+        <div class="brand-mark">✉</div>
+        <div>
+            <h1 class="brand-title">Smart Email Analyzer</h1>
+            <p class="brand-subtitle">Track inbox urgency, rules, and insights with a cleaner dashboard</p>
+        </div>
+    </div>
+
+    <c:choose>
+        <c:when test="${not empty sessionScope.loggedInUserId}">
+            <div class="topbar-actions">
+                <nav class="nav-links">
+                    <a class="nav-link ${currentPage eq 'inbox' ? 'active' : ''}" href="${pageContext.request.contextPath}/emails/inbox">Inbox</a>
+                    <a class="nav-link ${currentPage eq 'filter' ? 'active' : ''}" href="${pageContext.request.contextPath}/emails/filter">Filter &amp; Sort</a>
+                    <a class="nav-link ${currentPage eq 'rules' ? 'active' : ''}" href="${pageContext.request.contextPath}/rules">Rules</a>
+                    <a class="nav-link ${currentPage eq 'dashboard' ? 'active' : ''}" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
+                </nav>
+                <div class="user-box">
+                    <span class="user-chip">Signed in as <strong>${sessionScope.loggedInUserName}</strong></span>
+                    <a class="btn btn-outline btn-small" href="${pageContext.request.contextPath}/logout">Logout</a>
+                </div>
+            </div>
+        </c:when>
+        <c:otherwise>
+            <div class="guest-actions">
+                <a class="btn btn-ghost btn-small" href="${pageContext.request.contextPath}/login">Login</a>
+                <a class="btn btn-primary btn-small" href="${pageContext.request.contextPath}/register">Register</a>
+            </div>
+        </c:otherwise>
+    </c:choose>
+</div>
+
+<c:if test="${not empty successMessage}">
+    <div class="alert alert-success">${successMessage}</div>
+</c:if>
+<c:if test="${not empty errorMessage}">
+    <div class="alert alert-error">${errorMessage}</div>
+</c:if>

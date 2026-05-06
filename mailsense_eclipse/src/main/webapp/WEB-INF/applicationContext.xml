@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context.xsd
+         http://www.springframework.org/schema/tx
+         http://www.springframework.org/schema/tx/spring-tx.xsd
+         http://www.springframework.org/schema/task
+         http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <!-- Scan all except controllers -->
+    <context:component-scan base-package="com.mailsense">
+        <context:exclude-filter type="annotation"
+            expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <context:property-placeholder location="classpath:application.properties"/>
+
+    <!-- HikariCP DataSource -->
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="jdbcUrl"         value="${db.url}"/>
+        <property name="username"        value="${db.username}"/>
+        <property name="password"        value="${db.password}"/>
+        <property name="maximumPoolSize" value="10"/>
+        <property name="minimumIdle"     value="2"/>
+        <property name="connectionTestQuery" value="SELECT 1"/>
+        <property name="poolName"        value="MailSensePool"/>
+    </bean>
+
+    <!-- Hibernate SessionFactory -->
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="packagesToScan" value="com.mailsense.entity"/>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</prop>
+                <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto:validate}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql:false}</prop>
+                <prop key="hibernate.format_sql">true</prop>
+                <prop key="hibernate.jdbc.time_zone">UTC</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Transaction Manager -->
+    <bean id="transactionManager"
+          class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!-- Scheduler -->
+    <task:scheduler id="taskScheduler" pool-size="5"/>
+    <task:annotation-driven scheduler="taskScheduler"/>
+
+    <!-- AES Encryption Utility -->
+    <bean id="aesEncryptionUtil" class="com.mailsense.util.AesEncryptionUtil">
+        <constructor-arg value="${aes.secret.key}"/>
+    </bean>
+
+    <!-- BCrypt PasswordEncoder (also referenced in security-context.xml) -->
+    <bean id="passwordEncoder"
+          class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+        <constructor-arg value="12"/>
+    </bean>
+
+</beans>

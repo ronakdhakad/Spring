@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="
+               http://www.springframework.org/schema/security
+               http://www.springframework.org/schema/security/spring-security.xsd
+               http://www.springframework.org/schema/beans
+               http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Public static resources -->
+    <http pattern="/resources/**" security="none"/>
+    <http pattern="/favicon.ico"  security="none"/>
+
+    <http auto-config="false"
+          use-expressions="true"
+          entry-point-ref="loginUrlAuthenticationEntryPoint">
+
+        <!-- Public URLs -->
+        <intercept-url pattern="/auth/login"    access="isAnonymous()"/>
+        <intercept-url pattern="/auth/register" access="isAnonymous()"/>
+        <intercept-url pattern="/access-denied" access="permitAll()"/>
+
+        <!-- Protected URLs -->
+        <intercept-url pattern="/inbox/**"       access="isAuthenticated()"/>
+        <intercept-url pattern="/emails/**"      access="isAuthenticated()"/>
+        <intercept-url pattern="/send/**"        access="isAuthenticated()"/>
+        <intercept-url pattern="/rules/**"       access="isAuthenticated()"/>
+        <intercept-url pattern="/senders/**"     access="isAuthenticated()"/>
+        <intercept-url pattern="/snooze/**"      access="isAuthenticated()"/>
+        <intercept-url pattern="/analytics/**"   access="isAuthenticated()"/>
+        <intercept-url pattern="/email-config/**" access="isAuthenticated()"/>
+        <intercept-url pattern="/user/**"        access="hasRole('USER')"/>
+        <intercept-url pattern="/admin/**"       access="hasRole('ADMIN')"/>
+        <intercept-url pattern="/**"             access="isAuthenticated()"/>
+
+        <custom-filter ref="usernamePasswordAuthFilter"
+                       position="FORM_LOGIN_FILTER"/>
+
+        <logout
+            logout-url="/auth/logout"
+            logout-success-url="/auth/login?logout=true"
+            invalidate-session="true"
+            delete-cookies="JSESSIONID"
+            success-handler-ref="customLogoutSuccessHandler"/>
+
+        <csrf/>
+
+        <session-management
+            session-fixation-protection="newSession"
+            invalid-session-url="/auth/login?session=expired">
+            <concurrency-control max-sessions="1"
+                expired-url="/auth/login?session=expired"/>
+        </session-management>
+
+        <access-denied-handler error-page="/access-denied"/>
+
+        <remember-me
+            key="mailsense-remember-me-key-change-in-prod"
+            token-validity-seconds="604800"
+            user-service-ref="customUserDetailsService"/>
+    </http>
+
+    <authentication-manager alias="authenticationManager">
+        <authentication-provider user-service-ref="customUserDetailsService">
+            <password-encoder ref="passwordEncoder"/>
+        </authentication-provider>
+    </authentication-manager>
+
+    <beans:bean id="usernamePasswordAuthFilter"
+                class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
+        <beans:property name="authenticationManager" ref="authenticationManager"/>
+        <beans:property name="authenticationSuccessHandler" ref="customAuthSuccessHandler"/>
+        <beans:property name="authenticationFailureHandler" ref="customAuthFailureHandler"/>
+        <beans:property name="filterProcessesUrl" value="/auth/login"/>
+        <beans:property name="usernameParameter" value="email"/>
+        <beans:property name="passwordParameter" value="password"/>
+    </beans:bean>
+
+    <beans:bean id="loginUrlAuthenticationEntryPoint"
+                class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+        <beans:constructor-arg value="/auth/login"/>
+    </beans:bean>
+
+    <beans:bean id="customAuthSuccessHandler"
+                class="com.mailsense.security.CustomAuthSuccessHandler"/>
+    <beans:bean id="customAuthFailureHandler"
+                class="com.mailsense.security.CustomAuthFailureHandler"/>
+    <beans:bean id="customLogoutSuccessHandler"
+                class="com.mailsense.security.CustomLogoutSuccessHandler"/>
+
+</beans:beans>

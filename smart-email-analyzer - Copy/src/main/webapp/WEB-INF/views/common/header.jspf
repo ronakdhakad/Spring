@@ -1,0 +1,29 @@
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<div class="topbar">
+    <div>
+        <h1 class="brand-title">Smart Email Analyzer</h1>
+        <p class="brand-subtitle">Urgency scoring for Gmail inbox messages</p>
+    </div>
+
+    <c:if test="${not empty sessionScope.loggedInUserId}">
+        <div class="topbar-actions">
+            <nav class="nav-links">
+                <a class="nav-link ${currentPage eq 'inbox' ? 'active' : ''}" href="${pageContext.request.contextPath}/emails/inbox">Inbox</a>
+                <a class="nav-link ${currentPage eq 'filter' ? 'active' : ''}" href="${pageContext.request.contextPath}/emails/filter">Filter &amp; Sort</a>
+                <a class="nav-link ${currentPage eq 'rules' ? 'active' : ''}" href="${pageContext.request.contextPath}/rules">Rules</a>
+                <a class="nav-link ${currentPage eq 'dashboard' ? 'active' : ''}" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
+            </nav>
+            <div class="user-box">
+                <span>Welcome, <strong>${sessionScope.loggedInUserName}</strong></span>
+                <a class="logout-link" href="${pageContext.request.contextPath}/logout">Logout</a>
+            </div>
+        </div>
+    </c:if>
+</div>
+
+<c:if test="${not empty successMessage}">
+    <div class="alert alert-success">${successMessage}</div>
+</c:if>
+<c:if test="${not empty errorMessage}">
+    <div class="alert alert-error">${errorMessage}</div>
+</c:if>
